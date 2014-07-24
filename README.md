@@ -81,9 +81,9 @@ Cities with higher population are more likely to get selected.
 --- .class #id bg:#F0F0F0
 
 ## Generating the final map
-using ```gcIntermediate``` function, the coordinates of the lines forming the great circles are generated which is plotted using ```ggplot2```. Below is an example plot for Malaysia with 'light' map theme.
+using ```gcIntermediate``` function, the coordinates of the lines forming the great circles are generated which is plotted using ```ggplot2```. Below is an example plot for Nepal with 'dark' map theme.
 
-![Final plot example for Malaysia with light map theme](pictures/malaysia.png)
+![Final plot example for Nepal with light map theme](pictures/nepal.png)
 
 Try it yourself at https://asheshwor.shinyapps.io/migrationviz/
 
