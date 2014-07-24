@@ -8,9 +8,12 @@ The number of arcs are based on the log of the migrant stock.
 
 It's very easy to use, just select the region from the drop down box to update the map and data output. **That's it!**
 
+A screenshot:
+
+![Screenshot](pictures/screenshot.png)
+
 **Try it:** https://asheshwor.shinyapps.io/migrationviz/
 
---- .class #id bg:#F0F0F0
 
 ## Source of data
 
@@ -37,7 +40,6 @@ Reading world map shape file and cities database:
   places <- read.csv("data/cities1000.csv", header=FALSE, stringsAsFactors=FALSE)
 ```
 
---- .class #id bg:#F0F0F0
 
 ## Getting data for the selected region in long format
 
@@ -64,7 +66,6 @@ With some processing and matching with proper names the data is like this with s
 
 The coordinates for the migrants' origin and destination are same for each location. In next step, the coordinates will be replaced with locations of cities in the region rather than one fixed coordination for the entire region.
 
---- .class #id bg:#F0F0F0
 
 ## Selecting origin and destination points
 To select the location, the data is sorted by location and the ```getRandomCity``` function retrives a dataframe with the specified number of cities in the selected region with probability of selection based on the city population.
@@ -78,7 +79,6 @@ sample(c(1:nrow(allCities)), num, replace=TRUE, prob=allCities$pop)
 
 Cities with higher population are more likely to get selected.
 
---- .class #id bg:#F0F0F0
 
 ## Generating the final map
 using ```gcIntermediate``` function, the coordinates of the lines forming the great circles are generated which is plotted using ```ggplot2```. Below is an example plot for Nepal with 'dark' map theme.
