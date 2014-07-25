@@ -10,7 +10,7 @@ It's very easy to use, just select the region from the drop down box to update t
 
 A screenshot:
 
-![Screenshot2](pictures/screenshot.png)
+![Screenshot](pictures/screenshot2.jpg)
 
 **Try it:** https://asheshwor.shinyapps.io/migrationviz/
 
