@@ -35,14 +35,29 @@ shinyServer(function(input, output) {
   readMigrationTable <- function(xyear = 2013) {
     #usage readMigrationTable()
     #read data for a particular year #2013; 2010; 2008 & 1990
-    if (xyear == 2013) {sheetName <- "Table 10"} else
-    {if (xyear == 2010) {sheetName <- "Table 7"} else
-      {if (xyear == 2000) {sheetName <- "Table 4"} else
-        {if (xyear == 1990) {sheetName <- "Table 1"}
-    }}}
-    data <- read.xlsx2(dataloc, sheetName = sheetName, startRow = 16,
+#     if (xyear == 2013) {sheetName <- "Table 10"} else
+#     {if (xyear == 2010) {sheetName <- "Table 7"} else
+#       {if (xyear == 2000) {sheetName <- "Table 4"} else
+#         {if (xyear == 1990) {sheetName <- "Table 1"}
+#     }}}
+    data2013 <- read.xlsx2(dataloc, sheetName = "Table 10", startRow = 16,
                        colIndex = c(2, 4 , 10:241),
                        colClasses = c("character", rep("numeric", 232))) #read excel sheet selected columns and rows
+    #add datayear column
+    data2013$datayear <- 2013
+    data2010 <- read.xlsx2(dataloc, sheetName = "Table 7", startRow = 16,
+                           colIndex = c(2, 4 , 10:241),
+                           colClasses = c("character", rep("numeric", 232)))
+    data2010$datayear <- 2010
+    data2000 <- read.xlsx2(dataloc, sheetName = "Table 4", startRow = 16,
+                           colIndex = c(2, 4 , 10:241),
+                           colClasses = c("character", rep("numeric", 232)))
+    data2000$datayear <- 2000
+    data1990 <- read.xlsx2(dataloc, sheetName = "Table 1", startRow = 16,
+                           colIndex = c(2, 4 , 10:241),
+                           colClasses = c("character", rep("numeric", 232)))
+    data1990$datayear <- 1990
+    data <- rbind(data2013, data2010, data2000, data1990)
     return(data)
   }
   ## match with country codes
@@ -58,7 +73,7 @@ shinyServer(function(input, output) {
   ## match with country codes
   getCountryName <- function(xcountry="NP") {
     #usage getCountryCode("AU") will return "Australia"
-    code <- countries[countries$ISOCODE == xcountry,c("COUNTRY_UN")]
+    code <- countries[countries$ISOCODE == xcountry, c("COUNTRY_UN")]
     if (is.na(code[1])) {
       return(NA)
     } else {
@@ -91,17 +106,20 @@ shinyServer(function(input, output) {
   # hist(aep$pop)
   #gets 4 cities' lat long from United Arab Emirates
   getOutMigrants <- function(xcountry = "AU", xyear = 2013) {
-    inmig <- sum(m2013[m2013$variable == xcountry,]$STOCK)
+    inmig <- sum(m2013[m2013$variable == xcountry &
+                         m2013$datayear == xyear,]$STOCK)
     return(inmig)
   }
   getInMigrants <- function(xcountry = "AU", xyear = 2013) {
-    outmig <- sum(m2013[m2013$ISOCODE == xcountry,]$STOCK)
+    outmig <- sum(m2013[m2013$ISOCODE == xcountry &
+                          m2013$datayear == xyear,]$STOCK)
     return(outmig)
   }
   #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   #*     Clean UN data
   #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-  data2013 <- readMigrationTable()
+  data2013 <- readMigrationTable() #not only fro 2013 though
+  #data2013 <- data2013[data2013$datayear == {input$country}, ]
   data2013 <- data2013[data2013$Country.code < 900,] #isolate countries only
   countries$newname <- chartr("'", " ", countries$COUNTRY_UN)
   countries$newname <- chartr("(", " ", countries$newname)
@@ -124,10 +142,12 @@ shinyServer(function(input, output) {
   data2013$ISOCODE <- sapply(data2013$newname, getCountryCode)
   #melt data
   data2013.sub <- data2013[,c(-1,-2)]
-  m2013 <- melt(data2013.sub, c("newname", "ISOCODE"),
+  m2013 <- melt(data2013.sub, c("newname", "ISOCODE", "datayear"),
                 names(data2013)[3:234],
                 value.name = "STOCK")
-  names(m2013) <- c("newname", "ISOCODE", "variable", "STOCK")
+  names(m2013) <- c("newname", "ISOCODE", "datayear", "variable", "STOCK")
+rm(data2013)
+rm(data2013.sub)
   # head(m2013,12); tail(m2013)
   #force na
   m2013[m2013 == "NaN"] = NA
@@ -138,13 +158,14 @@ shinyServer(function(input, output) {
   #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   #*     Merge with country details
   #* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-  m2013.merged <- merge(m2013, countries, by="ISOCODE", all.x=FALSE)
-  m2013.merged <- merge(m2013.merged, countries, by.x="variable", by.y="ISOCODE", all.x=TRUE)
-  m2013.merged <- m2013.merged[,c(1,2,4,6,7,10,11)]
-  names(m2013.merged) <- c("source", "destination", "stock", "lat.d", "lon.d", "lat.s", "lon.s")
-  m2013.merged$stocklog <- log(m2013.merged$stock)
+m2013.merged <- merge(m2013, countries, by="ISOCODE", all.x=FALSE)
+m2013.merged <- merge(m2013.merged, countries, by.x="variable", by.y="ISOCODE", all.x=TRUE)
+m2013.merged <- m2013.merged[,c(1,2,4,5,7,8,11,12)]
+names(m2013.merged) <- c("source", "destination", "datayear","stock", "lat.d", "lon.d", "lat.s", "lon.s")
+m2013.merged$stocklog <- log(m2013.merged$stock)
   places.df <- data.frame (as.numeric(places$V6), as.numeric(places$V5),
                            places$V9, as.numeric(places$V15), places$V2)
+rm(places)
   names(places.df) <- c('lon', "lat", "code", "pop", "name")
   places.df <- places.df[,c(1:4)]
   places.df <- places.df[complete.cases(places.df),]
@@ -161,7 +182,7 @@ shinyServer(function(input, output) {
                       })
   places.df <- places.sub[places.sub$rank < 16,]
   places.df <- places.df[complete.cases(places.df),]
-  #plot vars
+  #plot vars [default theme - light]
   source.couleur <- "green4" #"green4"
   destination.couleur <- "red1" #"red3"
   mid.couleur <- "steelblue4"
@@ -174,21 +195,33 @@ shinyServer(function(input, output) {
   alpha <- 0.4 #0.3 0.2
   size <- 0.05 #0.02 0.01
   legend.emplacement <- c(.12,.22)
-  ### OUTPUT
-  output$oid1 <- renderPrint(paste("Migrant stock data for",
-                                   getCountryName({input$country})))
-  output$oid2 <- renderPrint(paste("In-migrants",
-                                   formatC(getInMigrants({input$country}),
-                                           format="d", big.mark=",")))
-  output$oid3 <- renderPrint(paste("Out-migrants",
-                                   formatC(getOutMigrants({input$country}),
-                                           format="d", big.mark=",")))
+#* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+#*     Things are a bit reactive down here
+#* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+myCountries <- reactive({input$country}) #transfer selected country code
+myYear <- reactive({input$radio}) 
+myTheme <- reactive({input$maptheme})
+#* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+#*     Summary data output
+#* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+output$oid1 <- renderPrint(paste("Migrant stock data for",
+                                 getCountryName(myCountries()),
+{input$radio}))
+output$oid2 <- renderPrint(paste("In-migrants",
+                                 formatC(getInMigrants(myCountries(),
+                                                       as.numeric(myYear())),
+                                         format="d", big.mark=",")))
+output$oid3 <- renderPrint(paste("Out-migrants",
+                                 formatC(getOutMigrants(myCountries(),
+                                                        myYear()),
+format="d", big.mark=",")))
 
   output$mapPlot <- renderPlot({
-    myCountries <- input$country #transfer selected country code
-#     mapTitle <- "International migration flows"
-    myTheme <- input$maptheme #get selected theme name
-    if (myTheme == "Dark") {
+#     myCountries <- input$country #transfer selected country code
+#     myYear <- input$radio
+#     myTheme <- input$maptheme #get selected theme name
+    #     mapTitle <- "International migration flows"
+    if (myTheme() == "Dark") {
       source.couleur <- "green1" #"green4"
       destination.couleur <- "red" #"red3"
       mid.couleur <- "skyblue"  #"steelblue4"
@@ -197,10 +230,10 @@ shinyServer(function(input, output) {
       landmass.couleur <- "grey4"
       text.couleur <- "honeydew1"
     }
-    
-    ##compute migrant stock figures    
-    m2013.merged.sub <- m2013.merged[m2013.merged$destination == myCountries |
-                                       m2013.merged$source == myCountries,]
+    ##compute migrant stock figures
+    m2013.merged.sub <- m2013.merged[m2013.merged$datayear == myYear() &
+                                       (m2013.merged$destination == myCountries() |
+                                       m2013.merged$source == myCountries()),]
     m2013.merged.sub <- m2013.merged.sub[m2013.merged.sub$stock > 0,]
     m2013.merged.sub$stocklog <- round(m2013.merged.sub$stocklog,0)
     m2013.merged.sub$source <- as.character(m2013.merged.sub$source)
@@ -218,8 +251,7 @@ shinyServer(function(input, output) {
       }
     })
     #replace cities for-loop
-    count <- nrow(m2013.final)
-    zdf <- m2013.final
+    zdf <- m2013.final[,c(-3)] #remove datayear col
     zdf <- zdf[order(zdf$source),]
     source.replace <- ddply(zdf, c("source"), function(xdf) {
       return(data.frame(getRandomCity2(xdf$source[1], nrow(xdf))))
@@ -290,5 +322,34 @@ shinyServer(function(input, output) {
       geom_text(aes(x= 0, y=90, 
                     label="International migration flows"),
                 color=text.couleur, size=5)
+    #summary
   })
+output$outSummary <- renderTable({
+#   myCountries <- input$country #transfer selected country code
+#   myYear <- input$radio
+  m2013.merged.sub <- m2013.merged[m2013.merged$datayear == myYear() &
+                                     (m2013.merged$destination == myCountries() |
+                                        m2013.merged$source == myCountries()),]
+  m2013.merged.sub <- m2013.merged.sub[m2013.merged.sub$stock > 0,]
+  m2013.merged.sub$source <- as.character(m2013.merged.sub$source)
+  sumOut <- m2013.merged.sub[m2013.merged.sub$source == myCountries(),]
+  sumOut <- sumOut[complete.cases(sumOut),]
+  sumOut <- sumOut[order(-sumOut$stock),c(2,4)]
+  sumOut$destinationname <- sapply(sumOut$destination, getCountryName)
+  sumOut <- data.frame("Destination" = sumOut$destinationname, "Migrants" = sumOut$stock)
+  head(sumOut,input$summaryRows)
+})
+output$inSummary <- renderTable({  
+  m2013.merged.sub <- m2013.merged[m2013.merged$datayear == myYear() &
+                                     (m2013.merged$destination == myCountries() |
+                                        m2013.merged$source == myCountries()),]
+  m2013.merged.sub <- m2013.merged.sub[m2013.merged.sub$stock > 0,]
+  m2013.merged.sub$source <- as.character(m2013.merged.sub$source)
+  sumIn <- m2013.merged.sub[m2013.merged.sub$destination == myCountries(),]
+  sumIn <- sumIn[complete.cases(sumIn),]
+  sumIn <- sumIn[order(-sumIn$stock),c(1,4)]
+  sumIn$sourcename <- sapply(sumIn$source, getCountryName)
+  sumIn <- data.frame("Origin" = sumIn$sourcename, "Migrants" = sumIn$stock)
+  head(sumIn,input$summaryRows)
+})
 })
