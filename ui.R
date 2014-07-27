@@ -3,8 +3,8 @@ library(ggplot2)
 # UI details for mapping international migration app
 shinyUI(fluidPage(theme = "bootstrap.css",
   # App title
-  title="Mapping international migration flows from UN stock migrants data",
-  h3("Mapping international migration flows from UN stock migrants data"),
+  title="Mapping international migration flows from UN migrants stock data",
+  h3("Mapping international migration flows from UN migrants stock data"),
   ## row for input and basic numbers output
   fluidRow(
     column(2,
