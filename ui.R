@@ -1,4 +1,5 @@
 library(shiny)
+library(shinysky)
 library(ggplot2)
 # UI details for mapping international migration app
 shinyUI(fluidPage(theme = "bootstrap.css",
@@ -270,6 +271,9 @@ column(2,
 )
 
 ),
+fluidRow(
+  column(12,
+         actionButton("getMap", "Generate map", block=TRUE))),
 
   ##Main panel to display some migration statistics on the selected region and
   ##  map of in and out migrants from the region
@@ -285,9 +289,9 @@ tableOutput("outSummary")),
          h4("Top source regions"),
          tableOutput("inSummary"))),
           h4("Documentation"),
-p("This app is aimed at computing the number of migrant stocks of the selected region and visualizing the data by connecting migrant origin and destination with great circle arcs. Select the region or country from the drop down box to update the map and data output. The map theme input changes the colour styles for the output map. The data for four years are available. A summary of top destinations of migrants from the selected region and top source for migrants in the region are displayed as tables. Select the number of top regions to display using the slider. The origin and destination of the arcs are coloured differently to visualize the direction of movement. This app uses quite a large amount of memory when visualizing large number of arcs so please be patient and allow ample time for the map to get updated."),
+p("This app is aimed at computing the number of migrant stocks of the selected region and visualizing the data by connecting migrant origins and destinations with great circle arcs. Select the region or country from the drop down box to update the map and data output. The map theme input changes the colour styles for the output map. The data for four years are available. A summary of top destinations of migrants from the selected region and top source for migrants in the region are displayed as tables. Select the number of top regions to display using the slider. The origin and destination of the arcs are coloured differently to visualize the direction of movement. This app uses quite a large amount of memory when visualizing large number of arcs so please be patient and allow ample time for the map to get updated."),
 p("The region / country names are entirely based on the United Nations data (see data sources for detail)."),
-         p("Number of lines between two regions based on log of migrants between the two regions. Migrant origin shown in green and migrant destination shown in red. Locations within region selected among the top 15 most populated cities in the region with probability based on the population i.e. cities with higher population are more likely to get selected. The origin and destination of arcs are computed in each run so the maps will vary each time."),
+p("Number of lines between two regions based on log of migrants between the two regions. Migrant origin shown in green and migrant destination shown in red. Locations within region selected among the top 15 most populated cities in the region with probability based on the population i.e. cities with higher population are more likely to get selected. The origin and destination of arcs are computed in each run so the maps will vary each time."),
 h4("Data sources"),         
 p("Data sources: Migration data from United Nations, Department of Economic and Social Affairs, Population Division (2013). Trends in International Migrant Stock: Migrants by Destination and Origin (United Nations database, POP/DB/MIG/Stock/Rev.2013) downloaded from http://esa.un.org/unmigration/TIMSA2013/data/UN_MigrantStock_2013.xls. World map shapefile from NaturalEarthData.com. Location and population of cities from geonames.org.")
   
