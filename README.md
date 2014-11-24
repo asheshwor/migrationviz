@@ -72,8 +72,8 @@ places <- read.csv("data/cities1000.csv", header=FALSE, stringsAsFactors=FALSE)
 
 * Finally the great circle arcs obtained using ```gcIntermediate``` function are and plotted using ```ggplot2``` over the world map.
 
-![Final plot example for Nepal with light map theme](pictures/nepal.png)
+![Final plot example for Nepal with dark map theme](pictures/nepal.png)
 
-<center><small>An example plot for Australia with 'light' map theme</small></center>
+<center><small>An example plot for Nepal with 'dark' map theme</small></center>
 
 <center>Try the app at https://asheshwor.shinyapps.io/migrationviz/</center>
